@@ -19,6 +19,7 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 
 from visualization import outliers_detection, contains_null, contains_nan
+from models import *
 
 
 def replace_outliers(data):
@@ -58,6 +59,10 @@ if __name__ == "__main__":
     test = pd.read_csv('data/EvaluateOnMe.csv', index_col=0,
                        sep=',', na_values=["?"])
 
+    train_y = training['y']
+    train_x = training.loc[:, training.columns != 'y']
+    features = list(train_x.columns)
+    train_x = data_analysis(train_x)
     # --------------------------------- Encoder -------------------------------------
 
     # Encode target labels
@@ -73,12 +78,10 @@ if __name__ == "__main__":
     train_x_norm = preprocessing.scale(train_x)
 
     # ---------------------- Split training into labels and data -------------------
-    training, val = train_test_split(training, test_size=0.2)
 
-    train_y = training['y']
-    train_x = training.loc[:, training.columns != 'y']
-    features = list(train_x.columns)
-
-    train_x = data_analysis(train_x)
+    X_train, X_val, y_train, y_val = train_test_split(train_x_norm, transformed_target,
+                                                      test_size=0.2,
+                                                      random_state=0)
 
     # --------------------------------- Model Evaluation -----------------------------
+    print(xgboost(X_train, y_train))
