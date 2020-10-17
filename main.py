@@ -87,12 +87,11 @@ if __name__ == "__main__":
     X_val = scaler.transform(X_val)
 
     # --------------------------------- Model Evaluation -----------------------------
-    xgb = xgboost(X_train, y_train)
-    print(xgb)
-    #svm = svm(X_train, y_train)
-    #rand_for = rand_forest(X_train, y_train)
-    #knn = knn(X_train, y_train)
-    #dec_tree = dec_tree(X_train, y_train)
+    xgboost(X_train, y_train)
+    #svm(X_train, y_train)
+    #rand_forest(X_train, y_train)
+    #knn(X_train, y_train)
+    #dec_tree(X_train, y_train)
 
     # -------------------------------- Testing ----------------------------------------
 

@@ -33,3 +33,12 @@ def contains_nan(data, data_col):
         if res == True:
             nan_indexes.append(c)
     return out, nan_indexes
+
+
+def model_result(model):
+    print("Best: %f using %s" % (model.best_score_, model.best_params_))
+    means = model.cv_results_['mean_test_score']
+    stds = model.cv_results_['std_test_score']
+    params = model.cv_results_['params']
+    for mean, stdev, param in zip(means, stds, params):
+        print("%f (%f) with: %r" % (mean, stdev, param))
