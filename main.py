@@ -17,6 +17,7 @@ from category_encoders.cat_boost import CatBoostEncoder
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 from visualization import outliers_detection, contains_null, contains_nan
 from models import *
@@ -75,13 +76,27 @@ if __name__ == "__main__":
     train_x = CBE_encoder.fit_transform(train_x[features], transformed_target)
     test = CBE_encoder.transform(test[features])
 
-    train_x_norm = preprocessing.scale(train_x)
-
     # ---------------------- Split training into labels and data -------------------
 
-    X_train, X_val, y_train, y_val = train_test_split(train_x_norm, transformed_target,
+    X_train, X_val, y_train, y_val = train_test_split(train_x, transformed_target,
                                                       test_size=0.2,
                                                       random_state=0)
 
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_val = scaler.transform(X_val)
+
     # --------------------------------- Model Evaluation -----------------------------
-    print(xgboost(X_train, y_train))
+    xgb = xgboost(X_train, y_train)
+    print(xgb)
+    #svm = svm(X_train, y_train)
+    #rand_for = rand_forest(X_train, y_train)
+    #knn = knn(X_train, y_train)
+    #dec_tree = dec_tree(X_train, y_train)
+
+    # -------------------------------- Testing ----------------------------------------
+
+    # --------------------------------- Output ----------------------------------------
+    # Get Classes (in order)
+    # Decode Classes
+    # Export to file

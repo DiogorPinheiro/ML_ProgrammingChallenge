@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 from sklearn import tree
 from sklearn.svm import SVC
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 
 # ------------------ Logistic Regression with L1 Regularization ------------------------
 
@@ -35,7 +35,7 @@ def dec_tree(data_x, data_y):
 
 def knn(data_x, data_y):
     knn = KNeighborsClassifier()
-    param_grid = {'n_neighbors': [3, 5, 7, 9],
+    param_grid = {'n_neighbors': [3, 5, 7, 9, 12, 15, 18, 21],
                   'weights': ['uniform', 'distance'],
                   'algorithm': ['auto', 'ball_tree', 'kd_tree'],
                   'p': [1, 2]}
@@ -72,8 +72,10 @@ def svm(data_x, data_y):
                                      {'kernel': ['linear'],
                                          'C': [.1, 1, 10, 100, 1000]},
                                      {'kernel': ['poly'], 'degree': [2, 3, 4, 5], 'C': [.1, 1, 10, 100, 1000]}]
-    clf_svc = GridSearchCV(svc, param_grid=param_grid,
-                           cv=5, verbose=True, n_jobs=-1)
+    clf_svc = RandomizedSearchCV(
+        svc, param_distributions=param_grid, n_iter=100, cv=5, verbose=True, n_jobs=-1)
+    # clf_svc = GridSearchCV(svc, param_grid=param_grid,
+    #                       cv=5, verbose=True, n_jobs=-1)
     best_clf_svc = clf_svc.fit(data_x, data_y)
     return best_clf_svc.best_score_
 # --------------------- xgBoost -------------------------------
@@ -94,7 +96,8 @@ def xgboost(data_x, data_y):
         'min_child_weight': [0, .01, 0.1, 1, 10, 100],
         'sampling_method': ['uniform', 'gradient_based']
     }
-
+    # clf_xgb = RandomizedSearchCV(
+    #    xgb, param_distributions=param_grid, n_iter=100, cv=5, verbose=True, n_jobs=-1)
     clf_xgb = GridSearchCV(xgb, param_grid=param_grid,
                            cv=5, verbose=True, n_jobs=-1)
     best_clf_xgb = clf_xgb.fit(data_x, data_y)
