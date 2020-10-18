@@ -13,7 +13,6 @@
 
 import numpy as np
 import pandas as pd
-import pickle
 from category_encoders.cat_boost import CatBoostEncoder
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
@@ -80,6 +79,7 @@ if __name__ == "__main__":
     train_x = training.loc[:, training.columns != 'y']
     features = list(train_x.columns)
     train_x = data_analysis(train_x)
+
     # --------------------------------- Encoder -------------------------------------
 
     # Encode target labels

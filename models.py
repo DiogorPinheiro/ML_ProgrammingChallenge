@@ -8,9 +8,9 @@ from xgboost import XGBClassifier
 from sklearn import tree
 from sklearn.svm import SVC
 from scipy import stats
+from skopt import BayesSearchCV
 
-from visualization import model_result
-from training import save_model
+from visualization import model_result, save_model
 
 # ------------------ Logistic Regression with L1 Regularization ------------------------
 
@@ -127,8 +127,10 @@ def xgboost(data_x, data_y):
                   'min_child_weight': [1, 2, 3]
                   }
     cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
-    clf_xgb = RandomizedSearchCV(
-        xgb, param_distributions=param_grid, n_iter=100, cv=cv, verbose=True, n_jobs=-1)
+    clf_xgb = BayesSearchCV(xgb, param_grid, n_iter=100,
+                            cv=cv, verbose=True, n_jobs=-1)
+    # clf_xgb = RandomizedSearchCV(
+    #    xgb, param_distributions=param_grid, n_iter=100, cv=cv, verbose=True, n_jobs=-1)
     # clf_xgb = GridSearchCV(xgb, param_grid=param_grid,
     #                       cv=5, verbose=True, n_jobs=-1)
     best_clf_xgb = clf_xgb.fit(data_x, data_y)

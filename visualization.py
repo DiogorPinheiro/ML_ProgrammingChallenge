@@ -1,5 +1,6 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pickle
 
 
 def outliers_detection(data, data_col):
@@ -62,3 +63,15 @@ def plot_distribution(data):
             plt.show()
         except:
             pass
+
+
+# ------------------------ Aux Functions ------------------
+def save_model(model, name):
+    with open(name, 'wb') as fid:
+        pickle.dump(model, fid)
+
+
+def read_model(name):
+    with open(name, 'rb') as fid:
+        model = pickle.load(fid)
+    return model
