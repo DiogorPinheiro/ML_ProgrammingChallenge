@@ -103,13 +103,6 @@ if __name__ == "__main__":
     X_val = scaler.transform(X_val)
     test = scaler.transform(test)
 
-    # --------------------------------- Model Evaluation -----------------------------
-    #xgboost(X_val, y_val)
-    #svm(X_val, y_val)
-    #rand_forest(X_val, y_val)
-    #knn(X_val, y_val)
-    #dec_tree(X_val, y_val)
-
     # -------------------------------- Training ----------------------------------------
     output_classes = train(X_train, y_train, X_val, y_val, test)
     # --------------------------------- Output ----------------------------------------

@@ -10,6 +10,7 @@ from sklearn.svm import SVC
 from scipy import stats
 
 from visualization import model_result
+from training import save_model
 
 # ------------------ Logistic Regression with L1 Regularization ------------------------
 
@@ -32,6 +33,27 @@ def dec_tree(data_x, data_y):
     cv = cross_val_score(dt, data_x, data_y, cv=5)
     print(cv.mean())
 
+# ---------------------- Gradient Boosting -------------------
+
+
+def grad_boost(data_x, data_y):
+    gb = GradientBoostingClassifier()
+    gb_param_grid = {'loss': ["deviance"],
+                     'n_estimators': [100, 200, 300],
+                     'learning_rate': [0.1, 0.05, 0.01],
+                     'max_depth': [4, 8],
+                     'min_samples_leaf': [100, 150],
+                     'max_features': [0.3, 0.1]
+                     }
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
+    clf_gbc = GridSearchCV(gb, param_grid=gb_param_grid,
+                           cv=cv, scoring="accuracy", n_jobs=-1, verbose=1)
+
+    best_clf_gbc = clf_gbc.fit(data_x, data_y)
+    model_result(best_clf_gbc)
+    save_model(best_clf_gbc.best_estimator_, 'models/best_gbc.pkl')
+    # return best_clf_gbc.best_estimator_
+
 # -------------------- kNN -----------------------------------
 
 
@@ -41,12 +63,13 @@ def knn(data_x, data_y):
                   'weights': ['uniform', 'distance'],
                   'algorithm': ['auto', 'ball_tree', 'kd_tree'],
                   'p': [1, 2]}
-    cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     clf_knn = GridSearchCV(knn, param_grid=param_grid,
                            cv=cv, verbose=True, n_jobs=-1)
     best_clf_knn = clf_knn.fit(data_x, data_y)
     model_result(best_clf_knn)
-    return best_clf_knn.best_estimator_
+    save_model(best_clf_knn.best_estimator_, 'models/best_knn.pkl')
+    # return best_clf_knn.best_estimator_
 
 
 # -------------------- Random Forest -------------------------
@@ -61,12 +84,13 @@ def rand_forest(data_x, data_y):
                   'max_features': ['auto', 'sqrt', 10],
                   'min_samples_leaf': [2, 3],
                   'min_samples_split': [2, 3]}
-    cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     clf_rf = GridSearchCV(rf, param_grid=param_grid,
                           cv=cv, verbose=True, n_jobs=-1)
     best_clf_rf = clf_rf.fit(data_x, data_y)
     model_result(best_clf_rf)
-    return best_clf_rf.best_estimator_
+    save_model(best_clf_rf.best_estimator_, 'models/best_randfor.pkl')
+    # return best_clf_rf.best_estimator_
 
 
 # --------------------- SVM -----------------------------------
@@ -79,14 +103,15 @@ def svm(data_x, data_y):
                                      {'kernel': ['linear'],
                                          'C': [.1, 1, 10, 100, 1000]},
                                      {'kernel': ['poly'], 'degree': [2, 3, 4, 5], 'C': [.1, 1, 10, 100, 1000]}]
-    cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     clf_svc = RandomizedSearchCV(
         svc, param_distributions=param_grid, n_iter=100, cv=cv, verbose=True, n_jobs=-1)
     # clf_svc = GridSearchCV(svc, param_grid=param_grid,
     #                       cv=5, verbose=True, n_jobs=-1)
     best_clf_svc = clf_svc.fit(data_x, data_y)
     model_result(best_clf_svc)
-    return best_clf_svc.best_estimator_
+    save_model(best_clf_svc.best_estimator_, 'models/best_svm.pkl')
+    # return best_clf_svc.best_estimator_
 
 # --------------------- xgBoost -------------------------------
 
@@ -101,14 +126,15 @@ def xgboost(data_x, data_y):
                   'colsample_bytree': stats.uniform(0.5, 0.45),
                   'min_child_weight': [1, 2, 3]
                   }
-    cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     clf_xgb = RandomizedSearchCV(
         xgb, param_distributions=param_grid, n_iter=100, cv=cv, verbose=True, n_jobs=-1)
     # clf_xgb = GridSearchCV(xgb, param_grid=param_grid,
     #                       cv=5, verbose=True, n_jobs=-1)
     best_clf_xgb = clf_xgb.fit(data_x, data_y)
     model_result(best_clf_xgb)
-    return best_clf_xgb.best_estimator_
+    save_model(best_clf_xgb.best_estimator_, 'models/best_xgb.pkl')
+    # return best_clf_xgb.best_estimator_
 
 
 # -------------------------- Adaboost ---------------------------------
@@ -119,9 +145,31 @@ def adaboost(data_x, data_y):
     grid = dict()
     grid['n_estimators'] = [10, 50, 100, 500]
     grid['learning_rate'] = [0.0001, 0.001, 0.01, 0.1, 1.0]
-    cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     grid_search = GridSearchCV(
         estimator=model, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy')
     best_clf_ada = grid_search.fit(data_x, data_y)
     model_result(best_clf_ada)
-    return best_clf_ada.best_estimator_
+    save_model(best_clf_ada.best_estimator_, 'models/best_ada.pkl')
+    # return best_clf_ada.best_estimator_
+
+# -------------------- Extra Trees --------------------------------------
+
+
+def extratrees(data_x, data_y):
+    ext = ExtraTreesClassifier()
+
+    ex_param_grid = {"max_depth": [None],
+                     "max_features": [1, 3, 10],
+                     "min_samples_split": [2, 3, 10],
+                     "min_samples_leaf": [1, 3, 10],
+                     "bootstrap": [False],
+                     "n_estimators": [100, 300],
+                     "criterion": ["gini"]}
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
+    gsExtC = GridSearchCV(ext, param_grid=ex_param_grid,
+                          cv=cv, scoring="accuracy", n_jobs=-1, verbose=1)
+    best_clf_extre = gsExtC.fit(data_x, data_y)
+    model_result(best_clf_extre)
+    save_model(best_clf_extre.best_estimator_, 'models/best_extre.pkl')
+    # return best_clf_extre.best_estimator_
