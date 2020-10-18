@@ -13,14 +13,16 @@
 
 import numpy as np
 import pandas as pd
+import pickle
 from category_encoders.cat_boost import CatBoostEncoder
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from visualization import outliers_detection, contains_null, contains_nan
+from visualization import *
 from models import *
+from training import *
 
 
 def replace_outliers(data):
@@ -36,19 +38,33 @@ def replace_outliers(data):
 
 
 def data_analysis(data):
-    data_col = data.columns
+    data_col = data.columns  # Get data columns
+
+    # ---------------------- Null/NaN Task Force ----------------------------
+
     data.replace(r'\s+( +\.)|#', np.nan, regex=True).replace('', np.nan)
     data.replace('?', np.nan, inplace=True)
 
     # null_out, null_indexes = contains_null(data, data_col) # check if there's any empty cells
     # nan_out, nan_indexes = contains_nan(data, data_col)   # check if contains nan
     data.fillna(data.mean(), inplace=True)
-
-    data.to_csv('out.csv', index=False)
     # print(data.isna().sum())  # Check how many nan values each column has
+
+    # ------------------- Outliers Task Force --------------------------------
 
     # outliers_detection(data, data_col)    # check if there are outliers
     # data = replace_outliers(data)  # Replace outliers if it makes sense
+
+    # -------------------- Skewness Task Force ------------------------------
+
+    # plot_distribution(data)    # Check distribution of each column
+    # Transform values with log function to reduce skewness distribution
+    data["x7"] = data["x7"].map(lambda i: np.log(i) if i > 0 else 0)
+    data["x8"] = data["x8"].map(lambda i: np.log(i) if i > 0 else 0)
+
+    # -------------------- Exploratory Analysis ----------------------------
+
+    # plot_correlation(data)  # Plot correlation between data features (heatmap)
 
     return data
 
@@ -79,12 +95,13 @@ if __name__ == "__main__":
     # ---------------------- Split training into labels and data -------------------
 
     X_train, X_val, y_train, y_val = train_test_split(train_x, transformed_target,
-                                                      test_size=0.2,
+                                                      test_size=0.3,
                                                       random_state=0)
 
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_val = scaler.transform(X_val)
+    test = scaler.transform(test)
 
     # --------------------------------- Model Evaluation -----------------------------
     #xgboost(X_val, y_val)
@@ -94,15 +111,14 @@ if __name__ == "__main__":
     #dec_tree(X_val, y_val)
 
     # -------------------------------- Training ----------------------------------------
-
+    output_classes = train(X_train, y_train, X_val, y_val, test)
     # --------------------------------- Output ----------------------------------------
-    # Get Classes (in order)
 
     # Decode Classes
-    #output_classes = label_enc.inverse_transform(transformed_target)
+    output_classes = label_enc.inverse_transform(output_classes)
     # print(output_classes)
 
     # Export to file
-    # with open('103010.txt', 'w') as f:
-    #    for item in output_classes:
-    #        f.write("%s\n" % item)
+    with open('103010.txt', 'w') as f:
+        for item in output_classes:
+            f.write("%s\n" % item)

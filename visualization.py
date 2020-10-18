@@ -42,3 +42,23 @@ def model_result(model):
     #params = model.cv_results_['params']
     # for mean, stdev, param in zip(means, stds, params):
     #    print("%f (%f) with: %r" % (mean, stdev, param))
+
+
+def plot_correlation(data):
+    corr = data.corr()
+    sns.heatmap(corr,
+                xticklabels=corr.columns.values,
+                yticklabels=corr.columns.values, annot=True)
+    plt.show()
+
+
+def plot_distribution(data):
+    col = data.columns
+    for c in col:
+        try:
+            g = sns.distplot(data[c], color="m",
+                             label="Skewness : %.2f" % (data[c].skew()))
+            g = g.legend(loc="best")
+            plt.show()
+        except:
+            pass

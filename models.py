@@ -3,7 +3,7 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.model_selection import cross_val_score, GridSearchCV, RandomizedSearchCV, RepeatedStratifiedKFold
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, ExtraTreesClassifier, VotingClassifier
 from xgboost import XGBClassifier
 from sklearn import tree
 from sklearn.svm import SVC
@@ -46,6 +46,7 @@ def knn(data_x, data_y):
                            cv=cv, verbose=True, n_jobs=-1)
     best_clf_knn = clf_knn.fit(data_x, data_y)
     model_result(best_clf_knn)
+    return best_clf_knn.best_estimator_
 
 
 # -------------------- Random Forest -------------------------
@@ -65,6 +66,7 @@ def rand_forest(data_x, data_y):
                           cv=cv, verbose=True, n_jobs=-1)
     best_clf_rf = clf_rf.fit(data_x, data_y)
     model_result(best_clf_rf)
+    return best_clf_rf.best_estimator_
 
 
 # --------------------- SVM -----------------------------------
@@ -84,6 +86,8 @@ def svm(data_x, data_y):
     #                       cv=5, verbose=True, n_jobs=-1)
     best_clf_svc = clf_svc.fit(data_x, data_y)
     model_result(best_clf_svc)
+    return best_clf_svc.best_estimator_
+
 # --------------------- xgBoost -------------------------------
 
 
@@ -104,6 +108,8 @@ def xgboost(data_x, data_y):
     #                       cv=5, verbose=True, n_jobs=-1)
     best_clf_xgb = clf_xgb.fit(data_x, data_y)
     model_result(best_clf_xgb)
+    return best_clf_xgb.best_estimator_
+
 
 # -------------------------- Adaboost ---------------------------------
 
@@ -116,5 +122,6 @@ def adaboost(data_x, data_y):
     cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
     grid_search = GridSearchCV(
         estimator=model, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy')
-    grid_result = grid_search.fit(data_x, data_y)
-    model_result(grid_result)
+    best_clf_ada = grid_search.fit(data_x, data_y)
+    model_result(best_clf_ada)
+    return best_clf_ada.best_estimator_
