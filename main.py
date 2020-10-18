@@ -61,7 +61,7 @@ def data_analysis(data):
     data["x7"] = data["x7"].map(lambda i: np.log(i) if i > 0 else 0)
     data["x8"] = data["x8"].map(lambda i: np.log(i) if i > 0 else 0)
 
-    # -------------------- Exploratory Analysis ----------------------------
+    # -------------------- Exploratory Data Analysis ----------------------------
 
     # plot_correlation(data)  # Plot correlation between data features (heatmap)
 

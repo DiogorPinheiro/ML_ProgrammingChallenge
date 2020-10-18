@@ -9,6 +9,7 @@ from sklearn import tree
 from sklearn.svm import SVC
 from scipy import stats
 from skopt import BayesSearchCV
+from skopt.space import Real, Categorical, Integer
 
 from visualization import model_result, save_model
 
@@ -23,7 +24,9 @@ from visualization import model_result, save_model
 def naive_bayes(data_x, data_y):
     gnb = GaussianNB()
     cv = cross_val_score(gnb, data_x, data_y, cv=5)
+    nb = gnb.fit(data_x, data_y)
     print(cv.mean())
+    save_model(nb, 'models/best_naive.pkl')
 
 # -------------------- Decision Tree -------------------------
 
@@ -99,10 +102,7 @@ def rand_forest(data_x, data_y):
 def svm(data_x, data_y):
     svc = SVC(probability=True)
     param_grid = tuned_parameters = [{'kernel': ['rbf'], 'gamma': [.1, .5, 1, 2, 5, 10],
-                                      'C': [.1, 1, 10, 100, 1000]},
-                                     {'kernel': ['linear'],
-                                         'C': [.1, 1, 10, 100, 1000]},
-                                     {'kernel': ['poly'], 'degree': [2, 3, 4, 5], 'C': [.1, 1, 10, 100, 1000]}]
+                                      'C': [.1, 1, 10, 100, 1000]}]
     cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     clf_svc = RandomizedSearchCV(
         svc, param_distributions=param_grid, n_iter=100, cv=cv, verbose=True, n_jobs=-1)
@@ -118,13 +118,19 @@ def svm(data_x, data_y):
 
 def xgboost(data_x, data_y):
     xgb = XGBClassifier(random_state=1, objective='multi: softmax')
-
-    param_grid = {'n_estimators': stats.randint(150, 500),
-                  'learning_rate': stats.uniform(0.01, 0.07),
-                  'subsample': stats.uniform(0.3, 0.7),
-                  'max_depth': [3, 4, 5, 6, 7, 8, 9],
-                  'colsample_bytree': stats.uniform(0.5, 0.45),
-                  'min_child_weight': [1, 2, 3]
+    # param_grid = {'n_estimators': stats.randint(150, 500),
+    #              'learning_rate': stats.uniform(0.01, 0.07),
+    #              'subsample': stats.uniform(0.3, 0.7),
+    #              'max_depth': [3, 4, 5, 6, 7, 8, 9],
+    #              'colsample_bytree': stats.uniform(0.5, 0.45),
+    #              'min_child_weight': [1, 2, 3]
+    #              }
+    param_grid = {'n_estimators': Integer(150, 500),
+                  'learning_rate': Real(0.01, 0.07),
+                  'subsample': Real(0.3, 0.7),
+                  'max_depth': Integer(3, 9),
+                  'colsample_bytree': Real(0.45, 0.5),
+                  'min_child_weight': Integer(1, 3)
                   }
     cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     clf_xgb = BayesSearchCV(xgb, param_grid, n_iter=100,
