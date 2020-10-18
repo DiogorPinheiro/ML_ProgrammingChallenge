@@ -87,15 +87,22 @@ if __name__ == "__main__":
     X_val = scaler.transform(X_val)
 
     # --------------------------------- Model Evaluation -----------------------------
-    xgboost(X_train, y_train)
-    #svm(X_train, y_train)
-    #rand_forest(X_train, y_train)
-    #knn(X_train, y_train)
-    #dec_tree(X_train, y_train)
+    #xgboost(X_val, y_val)
+    #svm(X_val, y_val)
+    #rand_forest(X_val, y_val)
+    #knn(X_val, y_val)
+    #dec_tree(X_val, y_val)
 
-    # -------------------------------- Testing ----------------------------------------
+    # -------------------------------- Training ----------------------------------------
 
     # --------------------------------- Output ----------------------------------------
     # Get Classes (in order)
+
     # Decode Classes
+    #output_classes = label_enc.inverse_transform(transformed_target)
+    # print(output_classes)
+
     # Export to file
+    # with open('103010.txt', 'w') as f:
+    #    for item in output_classes:
+    #        f.write("%s\n" % item)

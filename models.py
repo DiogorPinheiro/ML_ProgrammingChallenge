@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from xgboost import XGBClassifier
 from sklearn import tree
 from sklearn.svm import SVC
+from scipy import stats
 
 from visualization import model_result
 
@@ -87,20 +88,15 @@ def svm(data_x, data_y):
 
 
 def xgboost(data_x, data_y):
-    xgb = XGBClassifier(random_state=1)
+    xgb = XGBClassifier(random_state=1, objective='multi: softmax')
 
-    param_grid = {
-        'n_estimators': [20, 50, 100, 250, 500, 1000],
-        'colsample_bytree': [0.2, 0.5, 0.7, 0.8, 1],
-        'max_depth': [2, 5, 10, 15, 20, 25, None],
-        'reg_alpha': [0, 0.5, 1],
-        'reg_lambda': [1, 1.5, 2],
-        'subsample': [0.5, 0.6, 0.7, 0.8, 0.9],
-        'learning_rate': [.01, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9],
-        'gamma': [0, .01, .1, 1, 10, 100],
-        'min_child_weight': [0, .01, 0.1, 1, 10, 100],
-        'sampling_method': ['uniform', 'gradient_based']
-    }
+    param_grid = {'n_estimators': stats.randint(150, 500),
+                  'learning_rate': stats.uniform(0.01, 0.07),
+                  'subsample': stats.uniform(0.3, 0.7),
+                  'max_depth': [3, 4, 5, 6, 7, 8, 9],
+                  'colsample_bytree': stats.uniform(0.5, 0.45),
+                  'min_child_weight': [1, 2, 3]
+                  }
     cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
     clf_xgb = RandomizedSearchCV(
         xgb, param_distributions=param_grid, n_iter=100, cv=cv, verbose=True, n_jobs=-1)
