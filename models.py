@@ -1,6 +1,6 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_selection import SelectFromModel
-from sklearn.model_selection import cross_val_score, GridSearchCV, RandomizedSearchCV, RepeatedStratifiedKFold
+from sklearn.model_selection import cross_val_score, GridSearchCV, RandomizedSearchCV, RepeatedStratifiedKFold, StratifiedKFold
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, ExtraTreesClassifier, VotingClassifier
@@ -11,7 +11,7 @@ from scipy import stats
 from skopt import BayesSearchCV
 from skopt.space import Real, Categorical, Integer
 
-from visualization import model_result, save_model
+from visualization import model_result, save_model, plot_learning_curve
 
 # ------------------ Logistic Regression with L1 Regularization ------------------------
 
@@ -40,7 +40,13 @@ def dec_tree(data_x, data_y):
 
 
 def grad_boost(data_x, data_y):
+    cv = StratifiedKFold(n_splits=5, random_state=1)
+
     gb = GradientBoostingClassifier()
+
+    plot_learning_curve(gb, "Grad Boost",
+                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+
     gb_param_grid = {'loss': ["deviance"],
                      'n_estimators': [100, 200, 300],
                      'learning_rate': [0.1, 0.05, 0.01],
@@ -48,7 +54,6 @@ def grad_boost(data_x, data_y):
                      'min_samples_leaf': [100, 150],
                      'max_features': [0.3, 0.1]
                      }
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     clf_gbc = GridSearchCV(gb, param_grid=gb_param_grid,
                            cv=cv, scoring="accuracy", n_jobs=-1, verbose=1)
 
@@ -61,12 +66,17 @@ def grad_boost(data_x, data_y):
 
 
 def knn(data_x, data_y):
+    cv = StratifiedKFold(n_splits=5, random_state=1)
+
     knn = KNeighborsClassifier()
+
+    plot_learning_curve(knn, "KNN",
+                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+
     param_grid = {'n_neighbors': [3, 5, 7, 9, 12, 15, 18, 21],
                   'weights': ['uniform', 'distance'],
                   'algorithm': ['auto', 'ball_tree', 'kd_tree'],
                   'p': [1, 2]}
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     clf_knn = GridSearchCV(knn, param_grid=param_grid,
                            cv=cv, verbose=True, n_jobs=-1)
     best_clf_knn = clf_knn.fit(data_x, data_y)
@@ -79,7 +89,13 @@ def knn(data_x, data_y):
 
 
 def rand_forest(data_x, data_y):
+    cv = StratifiedKFold(n_splits=5, random_state=1)
+
     rf = RandomForestClassifier(random_state=1)
+
+    plot_learning_curve(rf, "RandForest",
+                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+
     param_grid = {'n_estimators': [400, 450, 500, 550],
                   'criterion': ['gini', 'entropy'],
                   'bootstrap': [True],
@@ -87,7 +103,6 @@ def rand_forest(data_x, data_y):
                   'max_features': ['auto', 'sqrt', 10],
                   'min_samples_leaf': [2, 3],
                   'min_samples_split': [2, 3]}
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     clf_rf = GridSearchCV(rf, param_grid=param_grid,
                           cv=cv, verbose=True, n_jobs=-1)
     best_clf_rf = clf_rf.fit(data_x, data_y)
@@ -100,12 +115,21 @@ def rand_forest(data_x, data_y):
 
 
 def svm(data_x, data_y):
+    cv = StratifiedKFold(n_splits=5, random_state=1)
+
     svc = SVC(probability=True)
-    param_grid = tuned_parameters = [{'kernel': ['rbf'], 'gamma': [.1, .5, 1, 2, 5, 10],
-                                      'C': [.1, 1, 10, 100, 1000]}]
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
-    clf_svc = RandomizedSearchCV(
-        svc, param_distributions=param_grid, n_iter=100, cv=cv, verbose=True, n_jobs=-1)
+
+    plot_learning_curve(svc, "SVM",
+                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+
+    param_grid = tuned_parameters = [{'kernel': Categorical(['rbf']), 'gamma': Real(.1, 10),
+                                      'C': Real(.1, 1000)}]
+    # param_grid = tuned_parameters = [{'kernel': ['rbf'], 'gamma': [.1, .5, 1, 2, 5, 10],
+    #                                  'C': [.1, 1, 10, 100, 1000]}]
+    clf_svc = BayesSearchCV(svc, param_grid, n_iter=100,
+                            cv=cv, verbose=True, n_jobs=-1)
+    # clf_svc = RandomizedSearchCV(
+    #    svc, param_distributions=param_grid, n_iter=100, cv=cv, verbose=True, n_jobs=-1)
     # clf_svc = GridSearchCV(svc, param_grid=param_grid,
     #                       cv=5, verbose=True, n_jobs=-1)
     best_clf_svc = clf_svc.fit(data_x, data_y)
@@ -117,7 +141,13 @@ def svm(data_x, data_y):
 
 
 def xgboost(data_x, data_y):
+    cv = StratifiedKFold(n_splits=5, random_state=1)
+
     xgb = XGBClassifier(random_state=1, objective='multi: softmax')
+
+    plot_learning_curve(xgb, "xgb",
+                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+
     # param_grid = {'n_estimators': stats.randint(150, 500),
     #              'learning_rate': stats.uniform(0.01, 0.07),
     #              'subsample': stats.uniform(0.3, 0.7),
@@ -132,7 +162,6 @@ def xgboost(data_x, data_y):
                   'colsample_bytree': Real(0.45, 0.5),
                   'min_child_weight': Integer(1, 3)
                   }
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     clf_xgb = BayesSearchCV(xgb, param_grid, n_iter=100,
                             cv=cv, verbose=True, n_jobs=-1)
     # clf_xgb = RandomizedSearchCV(
@@ -149,11 +178,16 @@ def xgboost(data_x, data_y):
 
 
 def adaboost(data_x, data_y):
+    cv = StratifiedKFold(n_splits=5, random_state=1)
+
     model = AdaBoostClassifier()
+
+    plot_learning_curve(model, "AdaBoost",
+                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+
     grid = dict()
     grid['n_estimators'] = [10, 50, 100, 500]
     grid['learning_rate'] = [0.0001, 0.001, 0.01, 0.1, 1.0]
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     grid_search = GridSearchCV(
         estimator=model, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy')
     best_clf_ada = grid_search.fit(data_x, data_y)
@@ -165,7 +199,12 @@ def adaboost(data_x, data_y):
 
 
 def extratrees(data_x, data_y):
+    cv = StratifiedKFold(n_splits=5, random_state=1)
+
     ext = ExtraTreesClassifier()
+
+    plot_learning_curve(ext, "ExtraTrees",
+                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
 
     ex_param_grid = {"max_depth": [None],
                      "max_features": [1, 3, 10],
@@ -174,7 +213,6 @@ def extratrees(data_x, data_y):
                      "bootstrap": [False],
                      "n_estimators": [100, 300],
                      "criterion": ["gini"]}
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
     gsExtC = GridSearchCV(ext, param_grid=ex_param_grid,
                           cv=cv, scoring="accuracy", n_jobs=-1, verbose=1)
     best_clf_extre = gsExtC.fit(data_x, data_y)

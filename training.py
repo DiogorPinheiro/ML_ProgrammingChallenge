@@ -1,7 +1,8 @@
 from sklearn.model_selection import cross_val_score
 
 from models import *
-from visualization import read_model, save_model
+from visualization import read_model, save_model, compare_models
+import pandas as pd
 
 XGB_NAME = 'models/best_xgb.pkl'
 SVM_NAME = 'models/best_svm.pkl'
@@ -15,13 +16,27 @@ NAIVE_NAME = 'models/best_naive.pkl'
 
 def find_best_model(X_val, y_val):
     # ----------------------- Evaluate Models -----------------
-    #xgboost(X_val, y_val)
-    #svm(X_val, y_val)
-    #rand_forest(X_val, y_val)
-    #knn(X_val, y_val)
-    #dec_tree(X_val, y_val)
-    #extratrees(X_val, y_val)
+    # xgboost(X_val, y_val)
+    # svm(X_val, y_val)
+    # rand_forest(X_val, y_val)
+    # knn(X_val, y_val)
+    # dec_tree(X_val, y_val)
+    # extratrees(X_val, y_val)
     pass
+
+
+def model_comparison(models, train_x, train_y):
+    mean_res = []
+    std_res = []
+    for model in models:
+        accuracy = cross_val_score(
+            model, train_x, train_y, scoring='accuracy', cv=10)
+        mean_res.append(accuracy.mean())
+        std_res.append(accuracy.std())
+
+    results = pd.DataFrame({"CrossValMeans": mean_res, "CrossValerrors": std_res, "Classifier": ["SVM", "ExtraTrees", "AdaBoost",
+                                                                                                 "XGBoost",  "GradientBoosting", "NaiveBayes", "KNeighbours"]})
+    compare_models(results, std_res)
 
 
 def train(train_x, train_y, val_x, val_y, test):
@@ -35,9 +50,14 @@ def train(train_x, train_y, val_x, val_y, test):
     model4 = read_model(XGB_NAME)
     model5 = read_model(GRBOOST_NAME)
     model6 = read_model(NAIVE_NAME)
+    model7 = read_model(KNN_NAME)
+
+    models = [model1, model2, model3, model4, model5, model6, model7]
+    # model_comparison(models, train_x, train_y)    # Plot cross-validation accuracy difference between classifiers
+
     # Ensemble modeling
-    model = VotingClassifier(estimators=[(
-        'm1', model1), ('m2', model2), ('m3', model3), ('m4', model4), ('m5', model5)], voting='soft', n_jobs=-1)
+    model = VotingClassifier(
+        estimators=[('m2', model2), ('m4', model4), ('m5', model5)], voting='soft', n_jobs=-1)
 
     # Save Model
     save_model(model, 'best_model.pkl')

@@ -1,9 +1,11 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pickle
+import numpy as np
+from sklearn.model_selection import learning_curve
 
 
-def outliers_detection(data, data_col):
+def outliers_plot(data, data_col):
     # sns.boxplot(x=data['x10'])
     # plt.show()
     for c in data_col:
@@ -38,9 +40,9 @@ def contains_nan(data, data_col):
 
 def model_result(model):
     print("Best: %f using %s" % (model.best_score_, model.best_params_))
-    #means = model.cv_results_['mean_test_score']
-    #stds = model.cv_results_['std_test_score']
-    #params = model.cv_results_['params']
+    # means = model.cv_results_['mean_test_score']
+    # stds = model.cv_results_['std_test_score']
+    # params = model.cv_results_['params']
     # for mean, stdev, param in zip(means, stds, params):
     #    print("%f (%f) with: %r" % (mean, stdev, param))
 
@@ -65,7 +67,75 @@ def plot_distribution(data):
             pass
 
 
-# ------------------------ Aux Functions ------------------
+def compare_models(results, std):
+    g = sns.barplot("CrossValMeans", "Classifier", data=results,
+                    palette="Set2", orient="h", **{'xerr': std})
+    g.set_xlabel("Mean Accuracy")
+    g = g.set_title("Cross validation scores")
+    plt.show()
+
+
+def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
+                        n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
+    # Adapted from https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
+
+    if axes is None:
+        _, axes = plt.subplots(1, 3, figsize=(20, 5))
+
+    axes[0].set_title(title)
+    if ylim is not None:
+        axes[0].set_ylim(*ylim)
+    axes[0].set_xlabel("Training examples")
+    axes[0].set_ylabel("Score")
+
+    train_sizes, train_scores, test_scores, fit_times, _ = \
+        learning_curve(estimator, X, y, cv=cv, n_jobs=n_jobs,
+                       train_sizes=train_sizes,
+                       return_times=True)
+    train_scores_mean = np.mean(train_scores, axis=1)
+    train_scores_std = np.std(train_scores, axis=1)
+    test_scores_mean = np.mean(test_scores, axis=1)
+    test_scores_std = np.std(test_scores, axis=1)
+    fit_times_mean = np.mean(fit_times, axis=1)
+    fit_times_std = np.std(fit_times, axis=1)
+
+    # Plot learning curve
+    axes[0].grid()
+    axes[0].fill_between(train_sizes, train_scores_mean - train_scores_std,
+                         train_scores_mean + train_scores_std, alpha=0.1,
+                         color="r")
+    axes[0].fill_between(train_sizes, test_scores_mean - test_scores_std,
+                         test_scores_mean + test_scores_std, alpha=0.1,
+                         color="g")
+    axes[0].plot(train_sizes, train_scores_mean, 'o-', color="r",
+                 label="Training score")
+    axes[0].plot(train_sizes, test_scores_mean, 'o-', color="g",
+                 label="Cross-validation score")
+    axes[0].legend(loc="best")
+
+    # Plot n_samples vs fit_times
+    axes[1].grid()
+    axes[1].plot(train_sizes, fit_times_mean, 'o-')
+    axes[1].fill_between(train_sizes, fit_times_mean - fit_times_std,
+                         fit_times_mean + fit_times_std, alpha=0.1)
+    axes[1].set_xlabel("Training examples")
+    axes[1].set_ylabel("fit_times")
+    axes[1].set_title("Scalability of the model")
+
+    # Plot fit_time vs score
+    axes[2].grid()
+    axes[2].plot(fit_times_mean, test_scores_mean, 'o-')
+    axes[2].fill_between(fit_times_mean, test_scores_mean - test_scores_std,
+                         test_scores_mean + test_scores_std, alpha=0.1)
+    axes[2].set_xlabel("fit_times")
+    axes[2].set_ylabel("Score")
+    axes[2].set_title("Performance of the model")
+
+    plt.show()
+
+    # ------------------------ Aux Functions ------------------
+
+
 def save_model(model, name):
     with open(name, 'wb') as fid:
         pickle.dump(model, fid)
