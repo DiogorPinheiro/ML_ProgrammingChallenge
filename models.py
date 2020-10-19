@@ -44,8 +44,8 @@ def grad_boost(data_x, data_y):
 
     gb = GradientBoostingClassifier()
 
-    plot_learning_curve(gb, "Grad Boost",
-                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+    # plot_learning_curve(gb, "Grad Boost",
+    #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
 
     gb_param_grid = {'loss': ["deviance"],
                      'n_estimators': [100, 200, 300],
@@ -70,8 +70,8 @@ def knn(data_x, data_y):
 
     knn = KNeighborsClassifier()
 
-    plot_learning_curve(knn, "KNN",
-                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+    # plot_learning_curve(knn, "KNN",
+    #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
 
     param_grid = {'n_neighbors': [3, 5, 7, 9, 12, 15, 18, 21],
                   'weights': ['uniform', 'distance'],
@@ -93,8 +93,8 @@ def rand_forest(data_x, data_y):
 
     rf = RandomForestClassifier(random_state=1)
 
-    plot_learning_curve(rf, "RandForest",
-                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+    # plot_learning_curve(rf, "RandForest",
+    #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
 
     param_grid = {'n_estimators': [400, 450, 500, 550],
                   'criterion': ['gini', 'entropy'],
@@ -119,8 +119,8 @@ def svm(data_x, data_y):
 
     svc = SVC(probability=True)
 
-    plot_learning_curve(svc, "SVM",
-                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+    # plot_learning_curve(svc, "SVM",
+    #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
 
     param_grid = tuned_parameters = [{'kernel': Categorical(['rbf']), 'gamma': Real(.1, 10),
                                       'C': Real(.1, 1000)}]
@@ -145,8 +145,8 @@ def xgboost(data_x, data_y):
 
     xgb = XGBClassifier(random_state=1, objective='multi: softmax')
 
-    plot_learning_curve(xgb, "xgb",
-                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+    # plot_learning_curve(xgb, "xgb",
+    #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
 
     # param_grid = {'n_estimators': stats.randint(150, 500),
     #              'learning_rate': stats.uniform(0.01, 0.07),
@@ -182,8 +182,8 @@ def adaboost(data_x, data_y):
 
     model = AdaBoostClassifier()
 
-    plot_learning_curve(model, "AdaBoost",
-                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+    # plot_learning_curve(model, "AdaBoost",
+    #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
 
     grid = dict()
     grid['n_estimators'] = [10, 50, 100, 500]
@@ -203,8 +203,8 @@ def extratrees(data_x, data_y):
 
     ext = ExtraTreesClassifier()
 
-    plot_learning_curve(ext, "ExtraTrees",
-                        data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
+    # plot_learning_curve(ext, "ExtraTrees",
+    #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
 
     ex_param_grid = {"max_depth": [None],
                      "max_features": [1, 3, 10],

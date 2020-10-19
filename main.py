@@ -112,12 +112,14 @@ if __name__ == "__main__":
     dataset = data_analysis(dataset)
 
     # ---------------------------------- Feature Engineering -------------------------
-
+    dataset['x11'] = dataset['x9'] * dataset['x4']
+    dataset['x12'] = dataset['x3'] * dataset['x4']
+    # dataset.to_csv('new_train.csv')
     # ---------------------------------- Separate Dataset ----------------------------
     train_x = dataset[:len_train]
     test = dataset[len_train:]
     # --------------------------------- Encoder --------------------------------------
-
+    features = list(train_x.columns)
     # Encode target labels
     label_enc = LabelEncoder()
     transformed_target = label_enc.fit_transform(
@@ -138,6 +140,8 @@ if __name__ == "__main__":
     X_train = scaler.fit_transform(X_train)
     X_val = scaler.transform(X_val)
     test = scaler.transform(test)
+
+    #rand_forest(X_val, y_val)
 
     # -------------------------------- Training ----------------------------------------
     output_classes = train(X_train, y_train, X_val, y_val, test)

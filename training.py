@@ -16,13 +16,15 @@ NAIVE_NAME = 'models/best_naive.pkl'
 
 def find_best_model(X_val, y_val):
     # ----------------------- Evaluate Models -----------------
-    # xgboost(X_val, y_val)
-    # svm(X_val, y_val)
-    # rand_forest(X_val, y_val)
-    # knn(X_val, y_val)
-    # dec_tree(X_val, y_val)
-    # extratrees(X_val, y_val)
-    pass
+    xgboost(X_val, y_val)
+    svm(X_val, y_val)
+    rand_forest(X_val, y_val)
+    knn(X_val, y_val)
+    dec_tree(X_val, y_val)
+    extratrees(X_val, y_val)
+    adaboost(X_val, y_val)
+    naive_bayes(X_val, y_val)
+    grad_boost(X_val, y_val)
 
 
 def model_comparison(models, train_x, train_y):
@@ -35,13 +37,13 @@ def model_comparison(models, train_x, train_y):
         std_res.append(accuracy.std())
 
     results = pd.DataFrame({"CrossValMeans": mean_res, "CrossValerrors": std_res, "Classifier": ["SVM", "ExtraTrees", "AdaBoost",
-                                                                                                 "XGBoost",  "GradientBoosting", "NaiveBayes", "KNeighbours"]})
+                                                                                                 "XGBoost",  "GradientBoosting", "NaiveBayes", "KNeighbours", "RandForest"]})
     compare_models(results, std_res)
 
 
 def train(train_x, train_y, val_x, val_y, test):
     # Define best models (with hyperparameter tuning)
-    find_best_model(val_x, val_y)
+    #find_best_model(val_x, val_y)
 
     # Load best models
     model1 = read_model(SVM_NAME)
@@ -51,13 +53,15 @@ def train(train_x, train_y, val_x, val_y, test):
     model5 = read_model(GRBOOST_NAME)
     model6 = read_model(NAIVE_NAME)
     model7 = read_model(KNN_NAME)
+    model8 = read_model(RANDFOR_NAME)
 
-    models = [model1, model2, model3, model4, model5, model6, model7]
-    # model_comparison(models, train_x, train_y)    # Plot cross-validation accuracy difference between classifiers
+    models = [model1, model2, model3, model4, model5, model6, model7, model8]
+    # Plot cross-validation accuracy difference between classifiers
+    model_comparison(models, train_x, train_y)
 
     # Ensemble modeling
     model = VotingClassifier(
-        estimators=[('m2', model2), ('m4', model4), ('m5', model5)], voting='soft', n_jobs=-1)
+        estimators=[('m2', model2), ('m4', model4), ('m5', model5), ('m1', model1), ('m8', model8)], voting='soft', n_jobs=-1)
 
     # Save Model
     save_model(model, 'best_model.pkl')
