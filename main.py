@@ -55,7 +55,7 @@ def replace_outliers(data):
     return multiple_outliers
 
 
-def data_analysis(data, labels):
+def data_analysis(data):
     data_col = data.columns  # Get data columns
 
     # ---------------------- Null/NaN Task Force ----------------------------
@@ -67,16 +67,6 @@ def data_analysis(data, labels):
     data.fillna(data.mean(), inplace=True)
     # print(data.isna().sum())  # Check how many nan values each column has
 
-    # ------------------- Outliers Task Force --------------------------------
-
-    # outliers_plot(data, data_col)    # check if there are outliers
-    # outliers = replace_outliers(data)  # Replace outliers if it makes sense
-
-    # Drop rows that, according to the Tukey method, contain more than 2 outliers
-    #data = data.drop(outliers, axis=0).reset_index(drop=True)
-    #labels = labels.drop(outliers, axis=0).reset_index(drop=True)
-    # data.to_csv('new_train.csv')
-    #outliers_plot(data, data_col)
     # -------------------- Skewness Task Force ------------------------------
 
     # plot_distribution(data)    # Check distribution of each column
@@ -88,7 +78,7 @@ def data_analysis(data, labels):
 
     # plot_correlation(data)  # Plot correlation between data features (heatmap)
 
-    return data, labels
+    return data
 
 
 if __name__ == "__main__":
@@ -104,9 +94,29 @@ if __name__ == "__main__":
     train_y = training['y']
     train_x = training.loc[:, training.columns != 'y']
     features = list(train_x.columns)
-    train_x, train_y = data_analysis(train_x, train_y)
 
-    # --------------------------------- Encoder -------------------------------------
+    # ---------------------------------- Outliers ------------------------------------
+
+    # outliers_plot(train_x, data_col)    # check if there are outliers
+    outliers = replace_outliers(train_x)  # Replace outliers if it makes sense
+
+    # Drop rows that, according to the Tukey method, contain more than 1 outlier
+    train_x = train_x.drop(outliers, axis=0).reset_index(drop=True)
+    train_y = train_y.drop(outliers, axis=0).reset_index(drop=True)
+    # train_x.to_csv('new_train.csv')
+
+    # ---------------------------------- Pre-Processing ------------------------------
+    len_train = len(train_x)
+    dataset = pd.concat(objs=[train_x, test], axis=0).reset_index(
+        drop=True)    # Join training and test datasets
+    dataset = data_analysis(dataset)
+
+    # ---------------------------------- Feature Engineering -------------------------
+
+    # ---------------------------------- Separate Dataset ----------------------------
+    train_x = dataset[:len_train]
+    test = dataset[len_train:]
+    # --------------------------------- Encoder --------------------------------------
 
     # Encode target labels
     label_enc = LabelEncoder()
