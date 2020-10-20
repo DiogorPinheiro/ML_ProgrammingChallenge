@@ -11,6 +11,9 @@
     -------------------------------------------------------------------------------------------------------------------------
 '''
 
+from training import *
+from models import *
+from visualization import *
 import numpy as np
 import pandas as pd
 from category_encoders.cat_boost import CatBoostEncoder
@@ -19,10 +22,7 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from collections import Counter
-
-from visualization import *
-from models import *
-from training import *
+from sklearn.decomposition import PCA
 
 
 def replace_outliers(data):
@@ -141,12 +141,12 @@ if __name__ == "__main__":
     X_val = scaler.transform(X_val)
     test = scaler.transform(test)
 
-    #rand_forest(X_val, y_val)
+    #catbo(X_val, y_val)
 
     # -------------------------------- Training ----------------------------------------
     output_classes = train(X_train, y_train, X_val, y_val, test)
     # --------------------------------- Output ----------------------------------------
-
+    '''
     # Decode Classes
     output_classes = label_enc.inverse_transform(output_classes)
     # print(output_classes)
@@ -155,3 +155,4 @@ if __name__ == "__main__":
     with open('103010.txt', 'w') as f:
         for item in output_classes:
             f.write("%s\n" % item)
+    '''

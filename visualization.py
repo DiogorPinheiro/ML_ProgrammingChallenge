@@ -2,7 +2,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pickle
 import numpy as np
-from sklearn.model_selection import learning_curve
+from sklearn.model_selection import learning_curve, StratifiedKFold, cross_val_score
 
 
 def outliers_plot(data, data_col):
@@ -38,8 +38,10 @@ def contains_nan(data, data_col):
     return out, nan_indexes
 
 
-def model_result(model):
-    print("Best: %f using %s" % (model.best_score_, model.best_params_))
+def model_result(model, data_x, data_y, best_param):
+    cv = StratifiedKFold(n_splits=5, random_state=1)
+    nested_score = cross_val_score(model, X=data_x, y=data_y, cv=cv)
+    print("Best: %f using %s" % (nested_score.mean(), best_param))
     # means = model.cv_results_['mean_test_score']
     # stds = model.cv_results_['std_test_score']
     # params = model.cv_results_['params']

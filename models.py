@@ -4,12 +4,15 @@ from sklearn.model_selection import cross_val_score, GridSearchCV, RandomizedSea
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, ExtraTreesClassifier, VotingClassifier
+from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 from sklearn import tree
 from sklearn.svm import SVC
 from scipy import stats
 from skopt import BayesSearchCV
 from skopt.space import Real, Categorical, Integer
+from lightgbm import LGBMClassifier
+from catboost import CatBoostClassifier
 
 from visualization import model_result, save_model, plot_learning_curve
 
@@ -42,7 +45,7 @@ def dec_tree(data_x, data_y):
 def grad_boost(data_x, data_y):
     cv = StratifiedKFold(n_splits=5, random_state=1)
 
-    gb = GradientBoostingClassifier()
+    gb = GradientBoostingClassifier(warm_start=True)
 
     # plot_learning_curve(gb, "Grad Boost",
     #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
@@ -58,8 +61,8 @@ def grad_boost(data_x, data_y):
                            cv=cv, scoring="accuracy", n_jobs=-1, verbose=1)
 
     best_clf_gbc = clf_gbc.fit(data_x, data_y)
-    model_result(best_clf_gbc)
-    save_model(best_clf_gbc.best_estimator_, 'models/best_gbc.pkl')
+    model_result(best_clf_gbc, data_x, data_y, best_clf_gbc.best_params_)
+    save_model(best_clf_gbc, 'models/best_gbc.pkl')
     # return best_clf_gbc.best_estimator_
 
 # -------------------- kNN -----------------------------------
@@ -80,8 +83,8 @@ def knn(data_x, data_y):
     clf_knn = GridSearchCV(knn, param_grid=param_grid,
                            cv=cv, verbose=True, n_jobs=-1)
     best_clf_knn = clf_knn.fit(data_x, data_y)
-    model_result(best_clf_knn)
-    save_model(best_clf_knn.best_estimator_, 'models/best_knn.pkl')
+    model_result(best_clf_knn, data_x, data_y, best_clf_knn.best_params_)
+    save_model(best_clf_knn, 'models/best_knn.pkl')
     # return best_clf_knn.best_estimator_
 
 
@@ -106,8 +109,8 @@ def rand_forest(data_x, data_y):
     clf_rf = GridSearchCV(rf, param_grid=param_grid,
                           cv=cv, verbose=True, n_jobs=-1)
     best_clf_rf = clf_rf.fit(data_x, data_y)
-    model_result(best_clf_rf)
-    save_model(best_clf_rf.best_estimator_, 'models/best_randfor.pkl')
+    model_result(best_clf_rf, data_x, data_y, best_clf_rf.best_params_)
+    save_model(best_clf_rf, 'models/best_randfor.pkl')
     # return best_clf_rf.best_estimator_
 
 
@@ -133,8 +136,8 @@ def svm(data_x, data_y):
     # clf_svc = GridSearchCV(svc, param_grid=param_grid,
     #                       cv=5, verbose=True, n_jobs=-1)
     best_clf_svc = clf_svc.fit(data_x, data_y)
-    model_result(best_clf_svc)
-    save_model(best_clf_svc.best_estimator_, 'models/best_svm.pkl')
+    model_result(best_clf_svc, data_x, data_y, best_clf_svc.best_params_)
+    save_model(best_clf_svc, 'models/best_svm.pkl')
     # return best_clf_svc.best_estimator_
 
 # --------------------- xgBoost -------------------------------
@@ -155,7 +158,7 @@ def xgboost(data_x, data_y):
     #              'colsample_bytree': stats.uniform(0.5, 0.45),
     #              'min_child_weight': [1, 2, 3]
     #              }
-    param_grid = {'n_estimators': Integer(150, 500),
+    param_grid = {'n_estimators': Integer(50, 500),
                   'learning_rate': Real(0.01, 0.07),
                   'subsample': Real(0.3, 0.7),
                   'max_depth': Integer(3, 9),
@@ -169,8 +172,8 @@ def xgboost(data_x, data_y):
     # clf_xgb = GridSearchCV(xgb, param_grid=param_grid,
     #                       cv=5, verbose=True, n_jobs=-1)
     best_clf_xgb = clf_xgb.fit(data_x, data_y)
-    model_result(best_clf_xgb)
-    save_model(best_clf_xgb.best_estimator_, 'models/best_xgb.pkl')
+    model_result(best_clf_xgb, data_x, data_y, best_clf_xgb.best_params_)
+    save_model(best_clf_xgb, 'models/best_xgb.pkl')
     # return best_clf_xgb.best_estimator_
 
 
@@ -180,7 +183,7 @@ def xgboost(data_x, data_y):
 def adaboost(data_x, data_y):
     cv = StratifiedKFold(n_splits=5, random_state=1)
 
-    model = AdaBoostClassifier()
+    model = AdaBoostClassifier(base_estimator=ExtraTreesClassifier())
 
     # plot_learning_curve(model, "AdaBoost",
     #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
@@ -191,9 +194,9 @@ def adaboost(data_x, data_y):
     grid_search = GridSearchCV(
         estimator=model, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy')
     best_clf_ada = grid_search.fit(data_x, data_y)
-    model_result(best_clf_ada)
-    save_model(best_clf_ada.best_estimator_, 'models/best_ada.pkl')
-    # return best_clf_ada.best_estimator_
+    model_result(best_clf_ada, data_x, data_y, best_clf_ada.best_params_)
+    save_model(best_clf_ada, 'models/best_ada.pkl')
+    return best_clf_ada.best_estimator_
 
 # -------------------- Extra Trees --------------------------------------
 
@@ -216,6 +219,50 @@ def extratrees(data_x, data_y):
     gsExtC = GridSearchCV(ext, param_grid=ex_param_grid,
                           cv=cv, scoring="accuracy", n_jobs=-1, verbose=1)
     best_clf_extre = gsExtC.fit(data_x, data_y)
-    model_result(best_clf_extre)
-    save_model(best_clf_extre.best_estimator_, 'models/best_extre.pkl')
+    model_result(best_clf_extre, data_x, data_y, best_clf_extre.best_params_)
+    save_model(best_clf_extre, 'models/best_extre.pkl')
     # return best_clf_extre.best_estimator_
+
+# --------------------- Light GBM ------------------------------------
+
+
+def lightgb(data_x, data_y):
+    cv = StratifiedKFold(n_splits=5, random_state=1)
+
+    xlb = LGBMClassifier()
+    param_grid = {'n_estimators': Integer(50, 500),
+                  'learning_rate': Real(0.001, 0.07),
+                  'subsample': Real(0.3, 0.7),
+                  'max_depth': Integer(3, 9),
+                  'min_child_weight': Real(0.001, 3.0)
+                  }
+    clf_lgb = BayesSearchCV(xlb, param_grid, n_iter=100,
+                            cv=cv, verbose=True, n_jobs=-1)
+    best_clf_lgb = clf_lgb.fit(data_x, data_y)
+    model_result(best_clf_lgb, data_x, data_y, best_clf_lgb.best_params_)
+    save_model(best_clf_lgb, 'models/best_lgb.pkl')
+    # return best_clf_lgb.best_estimator_
+
+# -------------------------- CatBoost ----------------------------------
+
+
+def catbo(data_x, data_y):
+    cv = StratifiedKFold(n_splits=5, random_state=1)
+
+    ctb = CatBoostClassifier(verbose=0)
+    param_grid = {'iterations': Integer(10, 1000),
+                  'depth': Integer(1, 8),
+                  'learning_rate': Real(0.01, 1.0, 'log-uniform'),
+                  'random_strength': Real(1e-9, 10, 'log-uniform'),
+                  'bagging_temperature': Real(0.0, 1.0),
+                  'border_count': Integer(1, 255),
+                  'l2_leaf_reg': Integer(2, 30),
+                  'n_estimators': Integer(50, 200),
+                  'scale_pos_weight': Real(0.01, 1.0, 'uniform')}
+
+    clf_ctb = BayesSearchCV(ctb, param_grid, n_iter=100,
+                            cv=cv, verbose=True, n_jobs=1)  # USe 1 job to avoid segmentation
+    best_clf_ctb = clf_ctb.fit(data_x, data_y)
+    model_result(best_clf_ctb, data_x, data_y, best_clf_ctb.best_params_)
+    save_model(best_clf_ctb, 'models/best_ctb.pkl')
+    # return best_clf_ctb.best_estimator_
