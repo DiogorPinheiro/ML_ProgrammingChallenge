@@ -6,8 +6,6 @@ from sklearn.model_selection import learning_curve, StratifiedKFold, cross_val_s
 
 
 def outliers_plot(data, data_col):
-    # sns.boxplot(x=data['x10'])
-    # plt.show()
     for c in data_col:
         try:
             sns.boxplot(x=data[c])
@@ -42,11 +40,6 @@ def model_result(model, data_x, data_y, best_param):
     cv = StratifiedKFold(n_splits=5, random_state=1)
     nested_score = cross_val_score(model, X=data_x, y=data_y, cv=cv)
     print("Best: %f using %s" % (nested_score.mean(), best_param))
-    # means = model.cv_results_['mean_test_score']
-    # stds = model.cv_results_['std_test_score']
-    # params = model.cv_results_['params']
-    # for mean, stdev, param in zip(means, stds, params):
-    #    print("%f (%f) with: %r" % (mean, stdev, param))
 
 
 def plot_correlation(data):
@@ -114,24 +107,6 @@ def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
     axes[0].plot(train_sizes, test_scores_mean, 'o-', color="g",
                  label="Cross-validation score")
     axes[0].legend(loc="best")
-
-    # Plot n_samples vs fit_times
-    axes[1].grid()
-    axes[1].plot(train_sizes, fit_times_mean, 'o-')
-    axes[1].fill_between(train_sizes, fit_times_mean - fit_times_std,
-                         fit_times_mean + fit_times_std, alpha=0.1)
-    axes[1].set_xlabel("Training examples")
-    axes[1].set_ylabel("fit_times")
-    axes[1].set_title("Scalability of the model")
-
-    # Plot fit_time vs score
-    axes[2].grid()
-    axes[2].plot(fit_times_mean, test_scores_mean, 'o-')
-    axes[2].fill_between(fit_times_mean, test_scores_mean - test_scores_std,
-                         test_scores_mean + test_scores_std, alpha=0.1)
-    axes[2].set_xlabel("fit_times")
-    axes[2].set_ylabel("Score")
-    axes[2].set_title("Performance of the model")
 
     plt.show()
 

@@ -16,10 +16,6 @@ from catboost import CatBoostClassifier
 
 from visualization import model_result, save_model, plot_learning_curve
 
-# ------------------ Logistic Regression with L1 Regularization ------------------------
-
-
-# def log_reg(data_x, data_y):
 
 # ------------------- Naive Bayes -----------------------------
 

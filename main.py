@@ -4,7 +4,7 @@
                                         KTH Royal Institute of Technology
                                             M.Sc Machine Learning 20/21
 
-                                        DD2421- Machine Learning
+                                            DD2421- Machine Learning
 
                                                 Diogo Pinheiro
 
@@ -22,7 +22,6 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from collections import Counter
 import featuretools as ft
-from sklearn.decomposition import PCA
 
 
 def replace_outliers(data):
@@ -108,15 +107,14 @@ if __name__ == "__main__":
     # ---------------------------------- Pre-Processing ------------------------------
     len_train = len(train_x)
     dataset = pd.concat(objs=[train_x, test], axis=0).reset_index(
-        drop=True)    # Join training and test datasets
+        drop=True)    # Concatenate training and test datasets
     dataset = data_analysis(dataset)
-
     # ---------------------------------- Feature Engineering -------------------------
     #dataset['x11'] = dataset['x9'] * dataset['x4']
     #dataset['x12'] = dataset['x3'] * dataset['x4']
-    #dataset['x13'] = dataset['x10'] * dataset['x2']
-    #dataset['x14'] = dataset['x9'] * dataset['x3']
-    # dataset.to_csv('new_train.csv')
+
+    # Deep Feature Synthesis
+
     #es = ft.EntitySet(id='TrainOnMe')
     # es = es.entity_from_dataframe(
     #    entity_id='x', dataframe=dataset, index='index')
@@ -124,8 +122,8 @@ if __name__ == "__main__":
     #                                      trans_primitives=[
     #                                          'multiply_numeric'],
     #                                      verbose=True)
-    #feature_matrix.to_csv('new_df.csv', index=False)
-    # plot_correlation(data)
+    #feature_matrix.to_csv('new_train.csv', index=False)
+
     # ---------------------------------- Separate Dataset ----------------------------
     train_x = dataset[:len_train]
     test = dataset[len_train:]

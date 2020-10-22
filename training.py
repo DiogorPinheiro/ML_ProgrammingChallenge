@@ -2,12 +2,13 @@ from sklearn.model_selection import cross_val_score, RepeatedStratifiedKFold
 from sklearn.ensemble import StackingClassifier
 from sklearn.linear_model import LogisticRegression
 import pandas as pd
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, log_loss
 
 from models import *
 from visualization import read_model, save_model, compare_models
 import pandas as pd
 
+# File names (best models found with hyperparameter tuning)
 XGB_NAME = 'models/best_xgb.pkl'
 SVM_NAME = 'models/best_svm.pkl'
 GRBOOST_NAME = 'models/best_gbc.pkl'
@@ -21,7 +22,7 @@ CTB_NAME = 'models/best_ctb.pkl'
 
 
 def find_best_model(X_val, y_val):
-    # ----------------------- Evaluate Models -----------------
+    # Hyperparameter tuning
     xgboost(X_val, y_val)
     svm(X_val, y_val)
     rand_forest(X_val, y_val)
@@ -36,6 +37,7 @@ def find_best_model(X_val, y_val):
 
 
 def model_comparison(models, train_x, train_y):
+    # Plot bar chart to compare model accuracies
     mean_res = []
     std_res = []
     for model in models:
@@ -79,7 +81,7 @@ def tune_weights(clf1, clf2, clf3, val_x, val_y):
 
 def train(train_x, train_y, val_x, val_y, test):
     # Define best models (with hyperparameter tuning)
-    # find_best_model(val_x, val_y)
+    #find_best_model(val_x, val_y)
 
     # Load best models
     model1 = read_model(SVM_NAME)
@@ -116,6 +118,10 @@ def train(train_x, train_y, val_x, val_y, test):
     accuracy = cross_val_score(
         model, train_x, train_y, scoring='accuracy', cv=cv)
     print("Accuracy of best model in training : {}".format(accuracy.mean() * 100))
+
+    #out = model.predict_proba(val_x)
+    #print(log_loss(val_y, out, labels=model.classes_))
+    #print(model.score(val_x, val_y))
 
     # Predict and return output classes
     output_classes = model.predict(test)
