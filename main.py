@@ -17,11 +17,11 @@ from visualization import *
 import numpy as np
 import pandas as pd
 from category_encoders.cat_boost import CatBoostEncoder
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from collections import Counter
+import featuretools as ft
 from sklearn.decomposition import PCA
 
 
@@ -112,9 +112,20 @@ if __name__ == "__main__":
     dataset = data_analysis(dataset)
 
     # ---------------------------------- Feature Engineering -------------------------
-    dataset['x11'] = dataset['x9'] * dataset['x4']
-    dataset['x12'] = dataset['x3'] * dataset['x4']
+    #dataset['x11'] = dataset['x9'] * dataset['x4']
+    #dataset['x12'] = dataset['x3'] * dataset['x4']
+    #dataset['x13'] = dataset['x10'] * dataset['x2']
+    #dataset['x14'] = dataset['x9'] * dataset['x3']
     # dataset.to_csv('new_train.csv')
+    #es = ft.EntitySet(id='TrainOnMe')
+    # es = es.entity_from_dataframe(
+    #    entity_id='x', dataframe=dataset, index='index')
+    # feature_matrix, feature_defs = ft.dfs(entityset=es, target_entity='x',
+    #                                      trans_primitives=[
+    #                                          'multiply_numeric'],
+    #                                      verbose=True)
+    #feature_matrix.to_csv('new_df.csv', index=False)
+    # plot_correlation(data)
     # ---------------------------------- Separate Dataset ----------------------------
     train_x = dataset[:len_train]
     test = dataset[len_train:]
@@ -141,12 +152,10 @@ if __name__ == "__main__":
     X_val = scaler.transform(X_val)
     test = scaler.transform(test)
 
-    #catbo(X_val, y_val)
-
     # -------------------------------- Training ----------------------------------------
     output_classes = train(X_train, y_train, X_val, y_val, test)
     # --------------------------------- Output ----------------------------------------
-    '''
+
     # Decode Classes
     output_classes = label_enc.inverse_transform(output_classes)
     # print(output_classes)
@@ -155,4 +164,3 @@ if __name__ == "__main__":
     with open('103010.txt', 'w') as f:
         for item in output_classes:
             f.write("%s\n" % item)
-    '''

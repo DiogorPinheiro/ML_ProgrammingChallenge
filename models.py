@@ -50,15 +50,17 @@ def grad_boost(data_x, data_y):
     # plot_learning_curve(gb, "Grad Boost",
     #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
 
-    gb_param_grid = {'loss': ["deviance"],
-                     'n_estimators': [100, 200, 300],
-                     'learning_rate': [0.1, 0.05, 0.01],
-                     'max_depth': [4, 8],
-                     'min_samples_leaf': [100, 150],
-                     'max_features': [0.3, 0.1]
+    gb_param_grid = {'loss': ["deviance"],              # NEW
+                     'n_estimators': Integer(100, 200, 300),
+                     'learning_rate': Real(0.001, 0.2),
+                     'max_depth': Integer(2, 8),
+                     'min_samples_leaf': Integer(50, 150),
+                     'max_features': Real(0.1, 0.5)
                      }
-    clf_gbc = GridSearchCV(gb, param_grid=gb_param_grid,
-                           cv=cv, scoring="accuracy", n_jobs=-1, verbose=1)
+    clf_gbc = BayesSearchCV(gb, gb_param_grid, n_iter=100,
+                            cv=cv, verbose=True, n_jobs=-1)
+    # clf_gbc = GridSearchCV(gb, param_grid=gb_param_grid,
+    #                       cv=cv, scoring="accuracy", n_jobs=-1, verbose=1)
 
     best_clf_gbc = clf_gbc.fit(data_x, data_y)
     model_result(best_clf_gbc, data_x, data_y, best_clf_gbc.best_params_)
@@ -99,15 +101,18 @@ def rand_forest(data_x, data_y):
     # plot_learning_curve(rf, "RandForest",
     #                    data_x, data_y, cv=cv, n_jobs=-1)   # Plot learning curve
 
-    param_grid = {'n_estimators': [400, 450, 500, 550],
-                  'criterion': ['gini', 'entropy'],
-                  'bootstrap': [True],
-                  'max_depth': [15, 20, 25],
-                  'max_features': ['auto', 'sqrt', 10],
-                  'min_samples_leaf': [2, 3],
-                  'min_samples_split': [2, 3]}
-    clf_rf = GridSearchCV(rf, param_grid=param_grid,
-                          cv=cv, verbose=True, n_jobs=-1)
+    param_grid = {'n_estimators': Integer(100, 550),  # NEW
+                  'criterion': Categorical(['gini', 'entropy']),
+                  'bootstrap': Categorical([True]),
+                  'max_depth': Integer(3, 25),
+                  'max_features': Categorical(['auto', 'sqrt', 'log2']),
+                  'min_samples_leaf': Integer(2, 5),
+                  'min_samples_split': Integer(2, 5)
+                  }
+    clf_rf = BayesSearchCV(rf, param_grid, n_iter=100,
+                           cv=cv, verbose=True, n_jobs=-1)
+    # clf_rf = GridSearchCV(rf, param_grid=param_grid,
+    #                      cv=cv, verbose=True, n_jobs=-1)
     best_clf_rf = clf_rf.fit(data_x, data_y)
     model_result(best_clf_rf, data_x, data_y, best_clf_rf.best_params_)
     save_model(best_clf_rf, 'models/best_randfor.pkl')
@@ -158,8 +163,8 @@ def xgboost(data_x, data_y):
     #              'colsample_bytree': stats.uniform(0.5, 0.45),
     #              'min_child_weight': [1, 2, 3]
     #              }
-    param_grid = {'n_estimators': Integer(50, 500),
-                  'learning_rate': Real(0.01, 0.07),
+    param_grid = {'n_estimators': Integer(50, 500),  # NEW
+                  'learning_rate': Real(0.01, 0.15),
                   'subsample': Real(0.3, 0.7),
                   'max_depth': Integer(3, 9),
                   'colsample_bytree': Real(0.45, 0.5),
@@ -231,7 +236,7 @@ def lightgb(data_x, data_y):
 
     xlb = LGBMClassifier()
     param_grid = {'n_estimators': Integer(50, 500),
-                  'learning_rate': Real(0.001, 0.07),
+                  'learning_rate': Real(0.001, 0.15),
                   'subsample': Real(0.3, 0.7),
                   'max_depth': Integer(3, 9),
                   'min_child_weight': Real(0.001, 3.0)
@@ -261,7 +266,7 @@ def catbo(data_x, data_y):
                   'scale_pos_weight': Real(0.01, 1.0, 'uniform')}
 
     clf_ctb = BayesSearchCV(ctb, param_grid, n_iter=100,
-                            cv=cv, verbose=True, n_jobs=1)  # USe 1 job to avoid segmentation
+                            cv=cv, verbose=True, n_jobs=-1)  # USe 1 job to avoid segmentation
     best_clf_ctb = clf_ctb.fit(data_x, data_y)
     model_result(best_clf_ctb, data_x, data_y, best_clf_ctb.best_params_)
     save_model(best_clf_ctb, 'models/best_ctb.pkl')

@@ -1,7 +1,8 @@
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, RepeatedStratifiedKFold
 from sklearn.ensemble import StackingClassifier
 from sklearn.linear_model import LogisticRegression
 import pandas as pd
+from sklearn.metrics import roc_auc_score
 
 from models import *
 from visualization import read_model, save_model, compare_models
@@ -31,7 +32,7 @@ def find_best_model(X_val, y_val):
     naive_bayes(X_val, y_val)
     grad_boost(X_val, y_val)
     lightgb(X_val, y_val)
-    #catbo(X_val, y_val)
+    # catbo(X_val, y_val)
 
 
 def model_comparison(models, train_x, train_y):
@@ -48,7 +49,7 @@ def model_comparison(models, train_x, train_y):
     compare_models(results, std_res)
 
 
-def tune_weights(clf1, clf2, clf3, clf4, val_x, val_y):
+def tune_weights(clf1, clf2, clf3, val_x, val_y):
     # Adapted from https://sebastianraschka.com/Articles/2014_ensemble_classifier.html#ensembleclassifier---tuning-weights
     df = []
 
@@ -56,30 +57,29 @@ def tune_weights(clf1, clf2, clf3, clf4, val_x, val_y):
     for w1 in range(1, 4):
         for w2 in range(1, 4):
             for w3 in range(1, 4):
-                for w4 in range(1, 4):
 
-                    if len(set((w1, w2, w3, w4))) == 1:  # skip if all weights are equal
-                        continue
+                if len(set((w1, w2, w3))) == 1:  # skip if all weights are equal
+                    continue
 
-                    eclf = VotingClassifier(
-                        estimators=[clf1, clf2, clf3, clf4], weights=[w1, w2, w3, w4], voting='soft', n_jobs=-1)
-                    scores = cross_val_score(
-                        estimator=eclf,
-                        X=val_x,
-                        y=val_y,
-                        cv=5,
-                        scoring='accuracy',
-                        n_jobs=-1)
+                eclf = VotingClassifier(
+                    estimators=[clf1, clf2, clf3], weights=[w1, w2, w3], voting='soft', n_jobs=-1)
+                scores = cross_val_score(
+                    estimator=eclf,
+                    X=val_x,
+                    y=val_y,
+                    cv=5,
+                    scoring='accuracy',
+                    n_jobs=-1)
 
-                    df.append([w1, w2, w3, w4, scores.mean(), scores.std()])
-                    i += 1
+                df.append([w1, w2, w3, scores.mean(), scores.std()])
+                i += 1
 
     print(df)
 
 
 def train(train_x, train_y, val_x, val_y, test):
     # Define best models (with hyperparameter tuning)
-    #find_best_model(val_x, val_y)
+    # find_best_model(val_x, val_y)
 
     # Load best models
     model1 = read_model(SVM_NAME)
@@ -91,19 +91,19 @@ def train(train_x, train_y, val_x, val_y, test):
     model7 = read_model(KNN_NAME)
     model8 = read_model(RANDFOR_NAME)
     model9 = read_model(LGB_NAME)
-    #model10 = read_model(CTB_NAME)
+    # model10 = read_model(CTB_NAME)
 
     models = [model1, model2, model3, model4,
               model5, model6, model7, model8, model9]
     # Plot cross-validation accuracy difference between classifiers
-    #model_comparison(models, train_x, train_y)
+    # model_comparison(models, train_x, train_y)
 
-    # tune_weights(('m2', model2), ('m4', model4), ('m5', model5),
-    #             ('m3', model3), train_x, train_y)
+    # tune_weights(('m2', ExtraTreesClassifier(**model2.best_params_)), ('m4', XGBClassifier(**model4.best_params_)),
+    #             ('m6', LGBMClassifier(**model9.best_params_)),  train_x, train_y)
 
     # Ensemble modeling
     model = VotingClassifier(
-        estimators=[('m1', ExtraTreesClassifier(**model2.best_params_)), ('m2', XGBClassifier(**model4.best_params_)), ('m6', LGBMClassifier(**model9.best_params_))], voting='soft', n_jobs=-1)
+        estimators=[('m2', ExtraTreesClassifier(**model2.best_params_)), ('m4', XGBClassifier(**model4.best_params_)), ('m6', LGBMClassifier(**model9.best_params_))], voting='soft', n_jobs=-1, weights=[3, 3, 2])
 
     # Save Model
     save_model(model, 'best_model.pkl')
