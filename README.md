@@ -5,10 +5,14 @@ Welcome to the DD2421 ML Challenge. In short, you must build and train a classif
 
 ## The Code
 
+## The Data
+<img src="visualization/input.png" alt="drawing" width="500"/> 
+
+
 ### Data Analysis
 Without any context, it is important to understand the data. For that, I used a heatmap diagram to check the correlation between features, which would be useful for dimensionality reduction in case some features are heavily correlated.
-
-IMAGE
+ 
+<img src="visualization/feature_correlation.png" alt="drawing" width="500"/> 
 
 X3 and X4 have a strong negative correlation (almost opposites of one another), so one possible solution would be to remove one of them. However, the model accuracy wasn't really affected by this, as well as the processing time, so there was no advantage in removing it.
 
@@ -22,15 +26,12 @@ All in all, no changes in the features were made.
 ### Models
 The final model was a Voting Classifier, which combined the classifiers: LightGBM, ExtraTrees and XGBoost.
 
+<img src="visualization/Classifier_Comp.png" alt="drawing" width="500" height="300"/> 
+
+
 | Classifier        | Accuracy
 | ------------- |:-------------:|
-| KNN    | right-aligned |
-| Naive Bayes      | centered |     
-| Gradient Boosting | are neat  |  
-| Random Forest   | right-aligned |
-| SVM     | centered    |  
-| XGBoost | 85.6% |
-| Adaboost   | right-aligned |
-| Extra Trees      | 84.2%  |   
-| Light Gradient Boosting | are neat |
 | Voting Classifier | 87.5% |
+
+### Output
+<img src="visualization/output.png" alt="drawing" width="500"/> 
