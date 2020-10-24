@@ -104,11 +104,13 @@ def train(train_x, train_y, val_x, val_y, test):
     #             ('m6', LGBMClassifier(**model9.best_params_)),  train_x, train_y)
 
     # Ensemble modeling
-    model = VotingClassifier(
-        estimators=[('m2', ExtraTreesClassifier(**model2.best_params_)), ('m4', XGBClassifier(**model4.best_params_)), ('m6', LGBMClassifier(**model9.best_params_))], voting='soft', n_jobs=-1, weights=[3, 3, 2])
+    # model = VotingClassifier(
+    #    estimators=[('m2', ExtraTreesClassifier(**model2.best_params_)), ('m4', XGBClassifier(**model4.best_params_)), ('m6', LGBMClassifier(**model9.best_params_))], voting='soft', n_jobs=-1, weights=[3, 3, 2])
+
+    model = XGBClassifier(**model4.best_params_)
 
     # Save Model
-    save_model(model, 'best_model.pkl')
+    #save_model(model, 'best_model.pkl')
 
     # Fit training data
     model = model.fit(train_x, train_y)
